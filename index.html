@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" charset="utf-8" src="openpgp.min.js"></script>
+        <script type="text/javascript">
+            
+            var options;
+            
+            var cleartext;
+            
+            function clearMesField() {
+                document.getElementById("message").value = "";
+                document.getElementById("message").focus();
+            }
+
+            function prepareSign() {
+                var key = document.getElementById("key").value;
+                var keyPwd = document.getElementById("keyPwd").value;
+                var message = document.getElementById("message").value;
+                
+                var privKeyObj = openpgp.key.readArmored(key).keys[0];
+                
+                if(privKeyObj == null) {
+                    alert("invalid key");
+                    return;
+                }
+                
+                var decryptResult = privKeyObj.decrypt(keyPwd);
+                
+                if(!decryptResult) {
+                    alert("invalid password");
+                    return;
+                }
+                
+                options = {
+                    data: message,
+                    privateKeys: privKeyObj
+                };
+                
+                openpgp.sign(options).then(function(signed) {
+                    promiseDone = true;
+                    cleartext = signed.data;
+                    document.getElementById("message").value = cleartext;
+                });
+            }
+        </script>
+    </head>
+    
+    <body>
+        
+        <table>
+        <tr>
+            <td></td>
+            <td align="center"><h1>Cleartext Sign</h1></td>
+        </tr>
+        <tr>
+            <td>Message: </td>
+            <td><textarea id="message" style="width:600px;height:100px;"></textarea></td>
+        </tr>
+        <tr>
+            <td>Private Key: </td>
+            <td><textarea id="key" style="width:600px;height:300px;"></textarea></td>
+        </tr>
+        <tr>
+            <td>Key Password: </td>
+            <td><input type="password" id="keyPwd" style="width:600px;" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td align="center"><input type="button" id="submitButton" onclick="prepareSign();" value="Sign" style="width:600px;"/></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td align="center"><input type="button" id="submitButton" onclick="clearMesField();" value="Clear Message Field" style="width:600px;"/></td>
+        </tr>
+        </table>
+
+    </body>
+</html>
